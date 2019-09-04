@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("./utils");
-const constants_1 = require("./constants");
-function resizeAlpha(alphaZero, currentCost, minCost) {
-    return Math.log((20 * currentCost) / minCost) * alphaZero;
+function resizeAlpha(alphaZero, currentCost, costThreshold) {
+    return Math.log((20 * currentCost) / costThreshold) * alphaZero;
 }
-async function MVGD(rawCostFunction, thetaZero, constraints = [-Infinity, Infinity], minCost = 1.3, maxIterations = 1e3, alphaZero = 0.05) {
+async function MVGD(rawCostFunction, thetaZero, constraints = [-Infinity, Infinity], costThreshold, maxIterations, maxStuckResults, alphaZero = 0.05) {
     const costFunction = (t) => Promise.resolve(rawCostFunction(t));
     const thetaSize = thetaZero.length;
     let currentTheta = [...thetaZero];
@@ -13,7 +12,7 @@ async function MVGD(rawCostFunction, thetaZero, constraints = [-Infinity, Infini
     let stuckLoops = 0;
     main: for (let iteration = 0; iteration < maxIterations; iteration++) {
         for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
-            const alpha = resizeAlpha(alphaZero, currentCost.worstError, minCost);
+            const alpha = resizeAlpha(alphaZero, currentCost.worstError, costThreshold);
             const { bestTheta, bestCost } = await utils_1.getBestValue(costFunction, currentTheta, constraints, alpha, varIdx, currentCost);
             if (currentCost === bestCost) {
                 stuckLoops++;
@@ -23,11 +22,11 @@ async function MVGD(rawCostFunction, thetaZero, constraints = [-Infinity, Infini
             }
             currentCost = bestCost;
             currentTheta = bestTheta;
-            if (stuckLoops >= constants_1.LOOPS_STUCK) {
+            if (stuckLoops >= maxStuckResults) {
                 console.log('stuck');
                 break main;
             }
-            if (currentCost.worstError <= minCost) {
+            if (currentCost.worstError <= costThreshold) {
                 console.log('converged');
                 break main;
             }
@@ -36,7 +35,7 @@ async function MVGD(rawCostFunction, thetaZero, constraints = [-Infinity, Infini
     return { points: utils_1.thetaToPoints(currentTheta), cost: currentCost };
 }
 exports.MVGD = MVGD;
-async function* MVGDgen(rawCostFunction, thetaZero, constraints = [-Infinity, Infinity], minCost = 1.3, maxIterations = 1e3, alphaZero = 0.05) {
+async function* MVGDgen(rawCostFunction, thetaZero, constraints = [-Infinity, Infinity], costThreshold, maxIterations, maxStuckResults, alphaZero = 0.05) {
     const costFunction = (t) => Promise.resolve(rawCostFunction(t));
     const thetaSize = thetaZero.length;
     let currentTheta = [...thetaZero];
@@ -44,7 +43,7 @@ async function* MVGDgen(rawCostFunction, thetaZero, constraints = [-Infinity, In
     let stuckLoops = 0;
     main: for (let iteration = 0; iteration < maxIterations; iteration++) {
         for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
-            const alpha = resizeAlpha(alphaZero, currentCost.worstError, minCost);
+            const alpha = resizeAlpha(alphaZero, currentCost.worstError, costThreshold);
             const { bestTheta, bestCost } = await utils_1.getBestValue(costFunction, currentTheta, constraints, alpha, varIdx, currentCost);
             if (currentCost === bestCost) {
                 stuckLoops++;
@@ -54,11 +53,11 @@ async function* MVGDgen(rawCostFunction, thetaZero, constraints = [-Infinity, In
             }
             currentCost = bestCost;
             currentTheta = bestTheta;
-            if (stuckLoops >= constants_1.LOOPS_STUCK) {
+            if (stuckLoops >= maxStuckResults) {
                 console.log('stuck');
                 break main;
             }
-            if (currentCost.worstError <= minCost) {
+            if (currentCost.worstError <= costThreshold) {
                 console.log('converged');
                 break main;
             }

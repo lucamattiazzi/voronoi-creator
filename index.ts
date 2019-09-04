@@ -9,7 +9,12 @@ import { MVGDgen, MVGD } from './mvgd'
  * @param maxIterations - If the optimization does not converge, it will stop after this number of iterations
  * @returns An object with the points coordinates and the worst error ratio
  **/
-export async function optimizer(sizes: number[], maxCost?: number): Promise<Results> {
+export async function optimizer(
+  sizes: number[],
+  maxCost: number = 1.5,
+  maxIterations: number = 1e4,
+  maxStuckResults: number = 1e3,
+): Promise<Results> {
   if (sizes.some(s => s === 0)) throw Error('Size cannot be 0')
 
   const totalSize = sizes.reduce<number>((a, n) => a + n, 0)
@@ -18,7 +23,7 @@ export async function optimizer(sizes: number[], maxCost?: number): Promise<Resu
     .map(Math.random)
   const normalizedSizes = sizes.map(s => s / totalSize)
   const costFunction = getCostFunction(normalizedSizes)
-  return MVGD(costFunction, theta, [0, 1], maxCost)
+  return MVGD(costFunction, theta, [0, 1], maxCost, maxIterations, maxStuckResults)
 }
 
 /**
@@ -30,7 +35,9 @@ export async function optimizer(sizes: number[], maxCost?: number): Promise<Resu
  **/
 export async function stepOptimizer(
   sizes: number[],
-  maxCost?: number,
+  maxCost: number = 1.5,
+  maxIterations: number = 1e4,
+  maxStuckResults: number = 1e3,
 ): Promise<AsyncIterableIterator<Results>> {
   if (sizes.some(s => s === 0)) throw Error('Size cannot be 0')
 
@@ -40,5 +47,5 @@ export async function stepOptimizer(
     .map(Math.random)
   const normalizedSizes = sizes.map(s => s / totalSize)
   const costFunction = getCostFunction(normalizedSizes)
-  return MVGDgen(costFunction, theta, [0, 1], maxCost)
+  return MVGDgen(costFunction, theta, [0, 1], maxCost, maxIterations, maxStuckResults)
 }

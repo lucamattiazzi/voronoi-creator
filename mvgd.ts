@@ -1,9 +1,8 @@
 import { CostFunction, AsyncCostFunction, Results } from './types'
 import { getBestValue, thetaToPoints } from './utils'
-import { LOOPS_STUCK } from './constants'
 
-function resizeAlpha(alphaZero: number, currentCost: number, minCost: number) {
-  return Math.log((20 * currentCost) / minCost) * alphaZero
+function resizeAlpha(alphaZero: number, currentCost: number, costThreshold: number) {
+  return Math.log((20 * currentCost) / costThreshold) * alphaZero
 }
 
 /**
@@ -11,8 +10,9 @@ function resizeAlpha(alphaZero: number, currentCost: number, minCost: number) {
  * @param rawCostFunction - Multivariate function, can be async, will be wrapped in promise if not async
  * @param thetaZero - Starting state of the function variables
  * @param constraints - When given, every iteration of the perturbation will clamp the values between the constraints
- * @param minCost - Value of cost under which the optimization will be considered successful
+ * @param costThreshold - Value of cost under which the optimization will be considered successful
  * @param maxIterations - If the optimization does not converge, it will stop after this number of iterations
+ * @param maxStuckResults - If the optimization gives the same results for this amount of time, it is considered stuck and exits
  * @param alphaZero - The learning rate of the algorithm, negative to find a maximum, positive to find a minimum. Will be rescaled while approaching the local minimum
  * @returns An array of parameters with the minimum result found
  **/
@@ -20,8 +20,9 @@ export async function MVGD(
   rawCostFunction: CostFunction | AsyncCostFunction,
   thetaZero: number[],
   constraints: [number, number] = [-Infinity, Infinity],
-  minCost: number = 1.3,
-  maxIterations: number = 1e3,
+  costThreshold: number,
+  maxIterations: number,
+  maxStuckResults: number,
   alphaZero: number = 0.05,
 ): Promise<Results> {
   // wraps the cost function to always treat it as an async function
@@ -34,7 +35,7 @@ export async function MVGD(
 
   main: for (let iteration = 0; iteration < maxIterations; iteration++) {
     for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
-      const alpha = resizeAlpha(alphaZero, currentCost.worstError, minCost)
+      const alpha = resizeAlpha(alphaZero, currentCost.worstError, costThreshold)
       const { bestTheta, bestCost } = await getBestValue(
         costFunction,
         currentTheta,
@@ -50,11 +51,11 @@ export async function MVGD(
       }
       currentCost = bestCost
       currentTheta = bestTheta
-      if (stuckLoops >= LOOPS_STUCK) {
+      if (stuckLoops >= maxStuckResults) {
         console.log('stuck')
         break main
       }
-      if (currentCost.worstError <= minCost) {
+      if (currentCost.worstError <= costThreshold) {
         console.log('converged')
         break main
       }
@@ -68,8 +69,9 @@ export async function MVGD(
  * @param rawCostFunction - Multivariate function, can be async, will be wrapped in promise if not async
  * @param thetaZero - Starting state of the function variables
  * @param constraints - When given, every iteration of the perturbation will clamp the values between the constraints
- * @param minCost - Value of cost under which the optimization will be considered successful
+ * @param costThreshold - Value of cost under which the optimization will be considered successful
  * @param maxIterations - If the optimization does not converge, it will stop after this number of iterations
+ * @param maxStuckResults - If the optimization gives the same results for this amount of time, it is considered stuck and exits
  * @param alphaZero - The learning rate of the algorithm, negative to find a maximum, positive to find a minimum. Will be rescaled while approaching the local minimum
  * @returns A generator that yields each step each time
  **/
@@ -77,8 +79,9 @@ export async function* MVGDgen(
   rawCostFunction: CostFunction | AsyncCostFunction,
   thetaZero: number[],
   constraints: [number, number] = [-Infinity, Infinity],
-  minCost: number = 1.3,
-  maxIterations: number = 1e3,
+  costThreshold: number,
+  maxIterations: number,
+  maxStuckResults: number,
   alphaZero: number = 0.05,
 ): AsyncIterableIterator<Results> {
   // wraps the cost function to always treat it as an async function
@@ -91,7 +94,7 @@ export async function* MVGDgen(
 
   main: for (let iteration = 0; iteration < maxIterations; iteration++) {
     for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
-      const alpha = resizeAlpha(alphaZero, currentCost.worstError, minCost)
+      const alpha = resizeAlpha(alphaZero, currentCost.worstError, costThreshold)
       const { bestTheta, bestCost } = await getBestValue(
         costFunction,
         currentTheta,
@@ -107,11 +110,11 @@ export async function* MVGDgen(
       }
       currentCost = bestCost
       currentTheta = bestTheta
-      if (stuckLoops >= LOOPS_STUCK) {
+      if (stuckLoops >= maxStuckResults) {
         console.log('stuck')
         break main
       }
-      if (currentCost.worstError <= minCost) {
+      if (currentCost.worstError <= costThreshold) {
         console.log('converged')
         break main
       }
