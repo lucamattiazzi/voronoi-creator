@@ -1,12 +1,16 @@
 {
   "name": "voronoi-optimizer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Generates a voronoi diagram starting from the surface ratio of each cell and the size of the rectangle.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
     "test": "node dist/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YeasterEgg/voronoi-creator"
   },
   "keywords": [],
   "author": {
