@@ -1,8 +1,9 @@
 import { CostFunction, AsyncCostFunction, Results } from './types'
 import { getBestValue, thetaToPoints } from './utils'
+import { LOOPS_STUCK } from './constants'
 
 function resizeAlpha(alphaZero: number, currentCost: number, minCost: number) {
-  return Math.log((10 * currentCost) / minCost) * alphaZero
+  return Math.log((20 * currentCost) / minCost) * alphaZero
 }
 
 /**
@@ -29,6 +30,7 @@ export async function MVGD(
 
   let currentTheta = [...thetaZero]
   let currentCost = await costFunction(currentTheta)
+  let stuckLoops = 0
 
   main: for (let iteration = 0; iteration < maxIterations; iteration++) {
     for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
@@ -41,9 +43,21 @@ export async function MVGD(
         varIdx,
         currentCost,
       )
+      if (currentCost === bestCost) {
+        stuckLoops++
+      } else {
+        stuckLoops = 0
+      }
       currentCost = bestCost
       currentTheta = bestTheta
-      if (currentCost.worstError <= minCost) break main
+      if (stuckLoops >= LOOPS_STUCK) {
+        console.log('stuck')
+        break main
+      }
+      if (currentCost.worstError <= minCost) {
+        console.log('converged')
+        break main
+      }
     }
   }
   return { points: thetaToPoints(currentTheta), cost: currentCost }
@@ -73,6 +87,7 @@ export async function* MVGDgen(
 
   let currentTheta = [...thetaZero]
   let currentCost = await costFunction(currentTheta)
+  let stuckLoops = 0
 
   main: for (let iteration = 0; iteration < maxIterations; iteration++) {
     for (let varIdx = 0; varIdx < thetaSize; varIdx++) {
@@ -85,9 +100,21 @@ export async function* MVGDgen(
         varIdx,
         currentCost,
       )
+      if (currentCost === bestCost) {
+        stuckLoops++
+      } else {
+        stuckLoops = 0
+      }
       currentCost = bestCost
       currentTheta = bestTheta
-      if (currentCost.worstError <= minCost) break main
+      if (stuckLoops >= LOOPS_STUCK) {
+        console.log('stuck')
+        break main
+      }
+      if (currentCost.worstError <= minCost) {
+        console.log('converged')
+        break main
+      }
       yield { points: thetaToPoints(currentTheta), cost: currentCost }
     }
   }

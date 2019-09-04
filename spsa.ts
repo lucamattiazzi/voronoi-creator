@@ -50,14 +50,14 @@ async function getGradients(
   costFunction: AsyncCostFunction,
   theta: number[],
   ckValue: number,
-  constraints: [number, number]
+  constraints: [number, number],
 ): Promise<number[]> {
   const deltaVector = bernouilli(theta.length, 0.1)
   const minusPerturbed = theta.map((val, idx) =>
-    clamp(val + ckValue * deltaVector[idx], constraints)
+    clamp(val + ckValue * deltaVector[idx], constraints),
   )
   const plusPerturbed = theta.map((val, idx) =>
-    clamp(val - ckValue * deltaVector[idx], constraints)
+    clamp(val - ckValue * deltaVector[idx], constraints),
   )
   const minusCost = await costFunction(minusPerturbed)
   const plusCost = await costFunction(plusPerturbed)
@@ -77,7 +77,7 @@ export async function SPSA(
   thetaZero: number[],
   constraints: [number, number] = [-Infinity, Infinity],
   minCost: number = 1.5,
-  maxIterations: number = 1e3
+  maxIterations: number = 1e3,
 ): Promise<number[]> {
   const costFunction: AsyncCostFunction = (t: number[]) => Promise.resolve(rawCostFunction(t))
 
