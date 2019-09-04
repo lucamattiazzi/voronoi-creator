@@ -1,6 +1,6 @@
 {
   "name": "voronoi-optimizer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Generates a voronoi diagram starting from the surface ratio of each cell and the size of the rectangle.",
   "main": "dist/index.js",
   "scripts": {
