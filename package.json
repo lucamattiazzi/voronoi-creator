@@ -1,0 +1,23 @@
+{
+  "name": "voronoi-optimizer",
+  "version": "1.0.2",
+  "description": "Generates a voronoi diagram starting from the surface ratio of each cell and the size of the rectangle.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "node dist/test.js"
+  },
+  "keywords": [],
+  "author": {
+    "email": "l.d.mattiazzi@gmail.com",
+    "name": "Luca Mattiazzi",
+    "url": "https://grokked.it"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^12.6.2",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {}
+}
