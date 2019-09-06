@@ -3,7 +3,6 @@ export interface CostFunctionResults {
     worstError: number;
 }
 export declare type CostFunction = (values: number[]) => CostFunctionResults;
-export declare type AsyncCostFunction = (values: number[]) => Promise<CostFunctionResults>;
 export interface Point {
     x: number;
     y: number;

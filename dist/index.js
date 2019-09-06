@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("./utils");
 const mvgd_1 = require("./mvgd");
-async function optimizer(sizes, maxCost = 1.5, maxIterations = 1e4, maxStuckResults = 1e3) {
+function optimizer(sizes, maxCost = 1.5, maxIterations = 1e4, maxStuckResults = 1e3) {
     if (sizes.some(s => s === 0))
         throw Error('Size cannot be 0');
     const totalSize = sizes.reduce((a, n) => a + n, 0);
@@ -14,7 +14,7 @@ async function optimizer(sizes, maxCost = 1.5, maxIterations = 1e4, maxStuckResu
     return mvgd_1.MVGD(costFunction, theta, [0, 1], maxCost, maxIterations, maxStuckResults);
 }
 exports.optimizer = optimizer;
-async function stepOptimizer(sizes, maxCost = 1.5, maxIterations = 1e4, maxStuckResults = 1e3) {
+function stepOptimizer(sizes, maxCost = 1.5, maxIterations = 1e4, maxStuckResults = 1e3) {
     if (sizes.some(s => s === 0))
         throw Error('Size cannot be 0');
     const totalSize = sizes.reduce((a, n) => a + n, 0);

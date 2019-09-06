@@ -19,13 +19,13 @@ function minIndex(values) {
     }
     return minIdx;
 }
-async function getBestValue(costFunction, currentTheta, constraints = [-Infinity, Infinity], alpha, varIdx, currentCost) {
+function getBestValue(costFunction, currentTheta, constraints = [-Infinity, Infinity], alpha, varIdx, currentCost) {
     const lower = clamp(currentTheta[varIdx] - alpha, constraints);
     const higher = clamp(currentTheta[varIdx] + alpha, constraints);
     const lowTheta = arrayReplace(currentTheta, varIdx, lower);
     const highTheta = arrayReplace(currentTheta, varIdx, higher);
-    const lowCost = await costFunction(lowTheta);
-    const highCost = await costFunction(highTheta);
+    const lowCost = costFunction(lowTheta);
+    const highCost = costFunction(highTheta);
     const costs = [lowCost, currentCost, highCost];
     const thetas = [lowTheta, currentTheta, highTheta];
     const idx = minIndex(costs.map(c => c.worstError));

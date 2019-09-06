@@ -9,12 +9,12 @@ import { MVGDgen, MVGD } from './mvgd'
  * @param maxIterations - If the optimization does not converge, it will stop after this number of iterations
  * @returns An object with the points coordinates and the worst error ratio
  **/
-export async function optimizer(
+export function optimizer(
   sizes: number[],
   maxCost: number = 1.5,
   maxIterations: number = 1e4,
   maxStuckResults: number = 1e3,
-): Promise<Results> {
+): Results {
   if (sizes.some(s => s === 0)) throw Error('Size cannot be 0')
 
   const totalSize = sizes.reduce<number>((a, n) => a + n, 0)
@@ -33,12 +33,12 @@ export async function optimizer(
  * @param maxIterations - If the optimization does not converge, it will stop after this number of iterations
  * @returns An iterator that yields each step with the points coordinates and the worst error ratio
  **/
-export async function stepOptimizer(
+export function stepOptimizer(
   sizes: number[],
   maxCost: number = 1.5,
   maxIterations: number = 1e4,
   maxStuckResults: number = 1e3,
-): Promise<AsyncIterableIterator<Results>> {
+): IterableIterator<Results> {
   if (sizes.some(s => s === 0)) throw Error('Size cannot be 0')
 
   const totalSize = sizes.reduce<number>((a, n) => a + n, 0)
